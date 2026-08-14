@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Would you meet me?</title>
+<style>
+  :root{
+    --cream:#FFF6EF;
+    --peach:#F8DCC8;
+    --rose-mid:#E9899F;
+    --rose-deep:#B23A5C;
+    --plum:#3A1F2E;
+    --gold:#D6A34C;
+    --shadow: 0 20px 45px rgba(58,31,46,.18);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:-apple-system, 'Segoe UI', 'Trebuchet MS', sans-serif;
+    background:
+      radial-gradient(circle at 15% 8%, #ffe3d1 0%, transparent 45%),
+      radial-gradient(circle at 90% 85%, #f3c6d4 0%, transparent 50%),
+      var(--cream);
+    color:var(--plum);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px 16px;
+    overflow-x:hidden;
+  }
+  .stage{ width:100%; max-width:420px; position:relative; }
+  .card{
+    background:linear-gradient(165deg,#FFFDFB 0%, #FDECE0 60%, #FAE1D6 100%);
+    border-radius:28px;
+    padding:34px 26px 28px;
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+    min-height:520px;
+    display:flex;
+    flex-direction:column;
+    border:1px solid rgba(178,58,92,.08);
+  }
+  .card::before{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 8% 92%, rgba(178,58,92,.10) 0%, transparent 30%),
+      radial-gradient(circle at 95% 6%, rgba(214,163,78,.16) 0%, transparent 30%);
+    pointer-events:none;
+  }
+  .panel{ display:none; flex-direction:column; flex:1; animation:rise .5s ease; position:relative; z-index:1;}
+  .panel.active{display:flex;}
+  @keyframes rise{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+
+  .eyebrow{
+    font-family:inherit;
+    font-weight:700;
+    letter-spacing:.2em;
+    font-size:11.5px;
+    text-transform:uppercase;
+    color:var(--rose-deep);
+    text-align:center;
+    margin-bottom:6px;
+  }
+  h1.title{
+    font-family:Georgia, 'Times New Roman', serif;
+    font-optical-sizing:auto;
+    font-weight:600;
+    font-size:29px;
+    text-align:center;
+    margin:2px 0 6px;
+    color:var(--plum);
+    line-height:1.3;
+  }
+  h1.title.script{
+    font-family:'Brush Script MT', 'Segoe Script', cursive;
+    font-weight:700;
+    font-size:40px;
+  }
+  p.sub{
+    text-align:center;
+    color:#7a5568;
+    font-size:14.5px;
+    margin:0 0 22px;
+  }
+
+  /* ---------- Envelope ---------- */
+  .envelope-wrap{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; text-align:center;
+  }
+  .envelope{
+    width:180px; height:126px; position:relative; cursor:pointer;
+    filter:drop-shadow(0 14px 20px rgba(178,58,92,.25));
+    animation:float 3.4s ease-in-out infinite;
+  }
+  @keyframes float{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+  .env-body{position:absolute; inset:0; background:linear-gradient(160deg,#fff,#fce3ea); border-radius:10px; border:2px solid var(--rose-mid);}
+  .env-flap{
+    position:absolute; top:0; left:0; right:0; height:0;
+    border-left:90px solid transparent;
+    border-right:90px solid transparent;
+    border-top:70px solid var(--rose-mid);
+    transform-origin:top;
+    transition:transform .6s cubic-bezier(.6,-0.28,.44,1.4);
+  }
+  .envelope.open .env-flap{ transform:rotateX(180deg); }
+  .env-seal{
+    position:absolute; top:46px; left:50%; transform:translateX(-50%);
+    width:38px; height:38px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #e0577a, var(--rose-deep));
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px; color:#fff; box-shadow:0 3px 8px rgba(0,0,0,.25);
+    z-index:2; transition:opacity .3s;
+  }
+  .envelope.open .env-seal{opacity:0;}
+  .tap-hint{ font-size:13px; color:var(--rose-deep); opacity:.8;}
+
+  /* ---------- Ask (Yes/No dodge) ---------- */
+  .critter{
+    font-size:64px; text-align:center; margin:6px 0 4px;
+    animation:wiggle 2.6s ease-in-out infinite;
+  }
+  @keyframes wiggle{ 0%,100%{transform:rotate(-4deg);} 50%{transform:rotate(4deg);} }
+  .ask-actions{ display:flex; flex-direction:column; gap:12px; margin-top:auto; position:relative; min-height:120px;}
+  .btn{
+    border:none; border-radius:999px; padding:15px 20px; font-family:inherit;
+    font-weight:700; font-size:16.5px; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-primary{ background:linear-gradient(120deg, var(--rose-deep), #d0567a); color:#fff; box-shadow:0 10px 22px rgba(178,58,92,.35);}
+  .btn-primary:active{transform:scale(.97);}
+  .btn-ghost{
+    background:#fff; color:var(--rose-deep); border:2px solid rgba(178,58,92,.3);
+    position:relative;
+  }
+  .btn-ghost.dodge{ position:absolute; }
+  .no-msg{ text-align:center; font-size:13px; color:#a06277; margin-top:8px; min-height:16px;}
+
+  /* ---------- Progress ---------- */
+  .vine{ display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:20px;}
+  .bud{ width:11px; height:11px; border-radius:50%; background:#f0d4c6; transition:all .35s ease; position:relative;}
+  .bud.done{ background:var(--rose-deep); transform:scale(1.15);}
+  .bud.current{ background:var(--gold); transform:scale(1.35); box-shadow:0 0 0 4px rgba(214,163,78,.25);}
+  .stem{ width:20px; height:2px; background:#f0d4c6; }
+
+  /* ---------- Grids ---------- */
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; overflow-y:auto; padding-bottom:4px; margin-bottom:16px;}
+  .opt{
+    background:#fff; border:2px solid rgba(178,58,92,.12); border-radius:18px; padding:16px 8px;
+    display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer;
+    transition:all .18s ease;
+  }
+  .opt .ic{ font-size:30px; }
+  .opt .lb{ font-size:13.5px; font-weight:700; color:var(--plum); text-align:center;}
+  .opt.sel{ border-color:var(--rose-deep); background:linear-gradient(160deg,#fff,#fbe6ec); box-shadow:0 8px 16px rgba(178,58,92,.18); transform:translateY(-2px);}
+
+  .footer-nav{ margin-top:auto; display:flex; gap:10px;}
+  .btn-back{ background:transparent; color:#a06277; border:none; font-family:inherit; font-weight:700; font-size:14px; padding:15px 12px; cursor:pointer;}
+  .btn-next{ flex:1; }
+  .btn-next:disabled{ opacity:.4; pointer-events:none;}
+
+  /* ---------- Calendar ---------- */
+  .cal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding:0 4px;}
+  .cal-head button{ background:none; border:none; font-size:18px; color:var(--rose-deep); cursor:pointer; padding:6px 10px;}
+  .cal-month{ font-family:Georgia, serif; font-weight:600; font-size:16px;}
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:16px;}
+  .cal-dow{ text-align:center; font-size:11px; color:#a06277; font-weight:700;}
+  .cal-day{
+    aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:10px;
+    font-size:13.5px; cursor:pointer; color:var(--plum); transition:all .15s ease;
+  }
+  .cal-day.empty{ visibility:hidden;}
+  .cal-day:not(.empty):hover{ background:#fbe6ec;}
+  .cal-day.sel{ background:var(--rose-deep); color:#fff; font-weight:700;}
+
+  /* ---------- Summary ---------- */
+  .summary-card{ background:#fff; border-radius:20px; padding:20px; margin-bottom:16px; border:2px dashed rgba(178,58,92,.3);}
+  .sum-row{ display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #f4e2da;}
+  .sum-row:last-child{ border-bottom:none;}
+  .sum-ic{ font-size:24px; width:34px; text-align:center;}
+  .sum-lb{ font-size:12px; color:#a06277;}
+  .sum-val{ font-weight:700; font-size:15px;}
+  .confetti{ position:fixed; inset:0; pointer-events:none; z-index:5; overflow:hidden;}
+  .confetti span{ position:absolute; top:-20px; font-size:18px; animation:fall linear forwards; }
+  @keyframes fall{ to{ transform:translateY(110vh) rotate(360deg); opacity:.2; } }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="card" id="card">
+
+    <!-- STEP 0: envelope -->
+    <div class="panel active" data-step="envelope">
+      <div class="envelope-wrap">
+        <div class="eyebrow">You've got mail</div>
+        <h1 class="title">Someone wants<br>to talk to you 💌</h1>
+        <div class="envelope" id="envelope" onclick="openEnvelope()">
+          <div class="env-flap"></div>
+          <div class="env-body"></div>
+          <div class="env-seal">♥</div>
+        </div>
+        <div class="tap-hint">tap the envelope to open it</div>
+      </div>
+    </div>
+
+    <!-- STEP 1: ask -->
+    <div class="panel" data-step="ask">
+      <div class="eyebrow">just one question</div>
+      <h1 class="title script">Would you meet me?</h1>
+      <p class="sub">ready to plan the best day together</p>
+      <p class="sub" style="margin-top:-14px; font-size:13px; opacity:.75;">no plan, no pressure — we'll just figure it out</p>
+      <div class="critter">🦔💕</div>
+      <div class="ask-actions">
+        <button class="btn btn-primary" onclick="goStep('activity')">Yes, let's go 🎉</button>
+        <div style="position:relative; height:56px;">
+          <button class="btn btn-ghost dodge" id="noBtn" onclick="dodgeOrNo()">No</button>
+        </div>
+        <div class="no-msg" id="noMsg"></div>
+      </div>
+    </div>
+
+    <!-- STEP 2: activity -->
+    <div class="panel" data-step="activity">
+      <div class="vine" id="vineActivity"></div>
+      <div class="eyebrow">first pick</div>
+      <h1 class="title" style="font-size:24px;">What should we do?</h1>
+      <p class="sub">pick the activity you're feeling</p>
+      <div class="grid" id="activityGrid"></div>
+      <div class="footer-nav">
+        <button class="btn-back" onclick="goStep('ask')">Back</button>
+        <button class="btn btn-primary btn-next" id="activityNext" disabled onclick="goStep('food')">Next</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: food -->
+    <div class="panel" data-step="food">
+      <div class="vine" id="vineFood"></div>
+      <div class="eyebrow">second pick</div>
+      <h1 class="title" style="font-size:24px;">What should we eat?</h1>
+      <p class="sub">pick the food you're craving</p>
+      <div class="grid" id="foodGrid"></div>
+      <div class="footer-nav">
+        <button class="btn-back" onclick="goStep('activity')">Back</button>
+        <button class="btn btn-primary btn-next" id="foodNext" disabled onclick="goStep('date')">Next</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: date -->
+    <div class="panel" data-step="date">
+      <div class="vine" id="vineDate"></div>
+      <div class="eyebrow">last pick</div>
+      <h1 class="title" style="font-size:24px;">When are you free?</h1>
+      <p class="sub">pick the day that works best</p>
+      <div class="cal-head">
+        <button onclick="changeMonth(-1)">‹</button>
+        <div class="cal-month" id="calMonth"></div>
+        <button onclick="changeMonth(1)">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="footer-nav">
+        <button class="btn-back" onclick="goStep('food')">Back</button>
+        <button class="btn btn-primary btn-next" id="dateNext" disabled onclick="finish()">Confirm the plan</button>
+      </div>
+    </div>
+
+    <!-- STEP 5: summary -->
+    <div class="panel" data-step="summary">
+      <div class="eyebrow">it's a date</div>
+      <h1 class="title">Deal! 🎉</h1>
+      <p class="sub">here's the plan for our day</p>
+      <div class="summary-card">
+        <div class="sum-row"><div class="sum-ic" id="sumActIc"></div><div><div class="sum-lb">Activity</div><div class="sum-val" id="sumAct"></div></div></div>
+        <div class="sum-row"><div class="sum-ic" id="sumFoodIc"></div><div><div class="sum-lb">Food</div><div class="sum-val" id="sumFood"></div></div></div>
+        <div class="sum-row"><div class="sum-ic">📅</div><div><div class="sum-lb">Day</div><div class="sum-val" id="sumDate"></div></div></div>
+      </div>
+      <p class="sub" style="margin-top:auto;">can't wait ❤️</p>
+      <a class="btn btn-primary" id="waBtn" href="#" target="_blank" rel="noopener" style="text-align:center; text-decoration:none; display:block;">Send this plan on WhatsApp 💬</a>
+      <button class="btn-back" style="margin-top:6px;" onclick="restart()">Start over</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const activities = [
+  {ic:"🎳", lb:"Bowling"},
+  {ic:"🎬", lb:"Movie"},
+  {ic:"🖼️", lb:"Museum"},
+  {ic:"⛳", lb:"Mini golf"},
+  {ic:"☕", lb:"Coffee date"},
+  {ic:"🌊", lb:"Walk by the water"},
+  {ic:"🧺", lb:"Picnic"},
+  {ic:"🎤", lb:"Karaoke"},
+];
+const foods = [
+  {ic:"🍕", lb:"Pizza"},
+  {ic:"🥩", lb:"Steak"},
+  {ic:"🍝", lb:"Pasta"},
+  {ic:"🍣", lb:"Sushi"},
+  {ic:"🍔", lb:"Burger"},
+  {ic:"🍢", lb:"BBQ / grill"},
+  {ic:"🍮", lb:"Dessert"},
+  {ic:"🥗", lb:"Something light"},
+];
+
+let state = { activity:null, food:null, date:null };
+let cal = { y:2026, m:1 }; // Feb 2026 default (0-indexed month)
+
+function buildGrid(list, containerId, key, nextBtnId){
+  const el = document.getElementById(containerId);
+  el.innerHTML = "";
+  list.forEach(item=>{
+    const d = document.createElement("div");
+    d.className = "opt";
+    d.innerHTML = `<div class="ic">${item.ic}</div><div class="lb">${item.lb}</div>`;
+    d.onclick = ()=>{
+      state[key] = item;
+      [...el.children].forEach(c=>c.classList.remove("sel"));
+      d.classList.add("sel");
+      document.getElementById(nextBtnId).disabled = false;
+    };
+    el.appendChild(d);
+  });
+}
+buildGrid(activities, "activityGrid", "activity", "activityNext");
+buildGrid(foods, "foodGrid", "food", "foodNext");
+
+function openEnvelope(){
+  const env = document.getElementById("envelope");
+  env.classList.add("open");
+  setTimeout(()=>goStep("ask"), 550);
+}
+
+const dodgePhrases = ["still no? 🥺","wait, hold on!","really? 😢","try again 👀","come on 😤"];
+let dodgeCount = 0;
+function dodgeOrNo(){
+  const btn = document.getElementById("noBtn");
+  const wrap = btn.parentElement;
+  const msg = document.getElementById("noMsg");
+  const maxX = wrap.clientWidth - btn.clientWidth - 6;
+  if(dodgeCount < 4){
+    const x = Math.random() * maxX * (Math.random()>0.5?1:-1);
+    const y = (Math.random()-0.5) * 30;
+    btn.style.transform = `translate(${x}px, ${y}px)`;
+    msg.textContent = dodgePhrases[dodgeCount % dodgePhrases.length];
+    dodgeCount++;
+  } else {
+    msg.textContent = "okay okay... but think about it a little more 😔";
+  }
+}
+
+const vineIds = {activity:"vineActivity", food:"vineFood", date:"vineDate"};
+const stepOrder = ["activity","food","date"];
+function renderVine(current){
+  stepOrder.forEach(s=>{
+    const holder = document.getElementById(vineIds[s]);
+    holder.innerHTML = "";
+    stepOrder.forEach((s2, i)=>{
+      const b = document.createElement("div");
+      b.className = "bud" + (stepOrder.indexOf(current) > i ? " done" : "") + (s2===current ? " current" : "");
+      holder.appendChild(b);
+      if(i < stepOrder.length-1){
+        const st = document.createElement("div");
+        st.className = "stem";
+        holder.appendChild(st);
+      }
+    });
+  });
+}
+
+function goStep(step){
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.querySelector(`.panel[data-step="${step}"]`).classList.add("active");
+  if(stepOrder.includes(step)) renderVine(step);
+  if(step === "date") renderCalendar();
+}
+
+const monthsEn = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const dowEn = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+function renderCalendar(){
+  document.getElementById("calMonth").textContent = `${monthsEn[cal.m]} ${cal.y}`;
+  const grid = document.getElementById("calGrid");
+  grid.innerHTML = "";
+  dowEn.forEach(d=>{
+    const el = document.createElement("div");
+    el.className = "cal-dow";
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+  const firstDay = new Date(cal.y, cal.m, 1);
+  let startOffset = (firstDay.getDay() + 6) % 7; // make Monday=0
+  const daysInMonth = new Date(cal.y, cal.m+1, 0).getDate();
+  for(let i=0;i<startOffset;i++){
+    const e = document.createElement("div");
+    e.className = "cal-day empty";
+    grid.appendChild(e);
+  }
+  for(let d=1; d<=daysInMonth; d++){
+    const el = document.createElement("div");
+    el.className = "cal-day";
+    el.textContent = d;
+    if(state.date && state.date.d===d && state.date.m===cal.m && state.date.y===cal.y){
+      el.classList.add("sel");
+    }
+    el.onclick = ()=>{
+      state.date = {d, m:cal.m, y:cal.y};
+      document.getElementById("dateNext").disabled = false;
+      renderCalendar();
+    };
+    grid.appendChild(el);
+  }
+}
+function changeMonth(dir){
+  cal.m += dir;
+  if(cal.m<0){cal.m=11; cal.y--;}
+  if(cal.m>11){cal.m=0; cal.y++;}
+  renderCalendar();
+}
+
+function finish(){
+  document.getElementById("sumActIc").textContent = state.activity.ic;
+  document.getElementById("sumAct").textContent = state.activity.lb;
+  document.getElementById("sumFoodIc").textContent = state.food.ic;
+  document.getElementById("sumFood").textContent = state.food.lb;
+  document.getElementById("sumDate").textContent = `${monthsEn[state.date.m]} ${state.date.d}, ${state.date.y}`;
+  goStep("summary");
+  launchConfetti();
+  setWhatsappLink();
+}
+
+const WHATSAPP_NUMBER = "201090832982";
+function setWhatsappLink(){
+  const dateStr = `${monthsEn[state.date.m]} ${state.date.d}, ${state.date.y}`;
+  const msg = `Yes! 🎉 I'd love to meet you.\n\nActivity: ${state.activity.ic} ${state.activity.lb}\nFood: ${state.food.ic} ${state.food.lb}\nDay: 📅 ${dateStr}`;
+  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+  document.getElementById("waBtn").setAttribute("href", url);
+}
+
+function launchConfetti(){
+  const c = document.createElement("div");
+  c.className = "confetti";
+  document.body.appendChild(c);
+  const emojis = ["🌸","💗","✨","🌹","💌"];
+  for(let i=0;i<26;i++){
+    const s = document.createElement("span");
+    s.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    s.style.left = Math.random()*100 + "vw";
+    s.style.animationDuration = (2.5 + Math.random()*2) + "s";
+    s.style.fontSize = (14 + Math.random()*14) + "px";
+    c.appendChild(s);
+  }
+  setTimeout(()=>c.remove(), 4800);
+}
+
+function restart(){
+  state = {activity:null, food:null, date:null};
+  dodgeCount = 0;
+  document.getElementById("noBtn").style.transform = "translate(0,0)";
+  document.getElementById("noMsg").textContent = "";
+  document.getElementById("activityNext").disabled = true;
+  document.getElementById("foodNext").disabled = true;
+  document.getElementById("dateNext").disabled = true;
+  document.querySelectorAll(".opt.sel").forEach(o=>o.classList.remove("sel"));
+  document.getElementById("envelope").classList.remove("open");
+  goStep("envelope");
+}
+</script>
+</body>
+</html>
